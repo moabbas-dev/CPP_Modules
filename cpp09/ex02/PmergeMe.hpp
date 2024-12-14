@@ -6,7 +6,7 @@
 /*   By: moabbas <moabbas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/14 14:18:55 by moabbas           #+#    #+#             */
-/*   Updated: 2024/12/14 15:45:35 by moabbas          ###   ########.fr       */
+/*   Updated: 2024/12/14 18:21:54 by moabbas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ public:
 	PmergeMe();
 	~PmergeMe();
 
-	template <typename Container> static void processInput(int argc ,char* argv[] ,Container& input ,std::string type) {
+	template <typename Container>
+	static void processInput(int argc ,char* argv[] ,Container& input ,std::string type) {
 		if(argc < 2)
 			throw std::runtime_error("Error: No sequence provided.");
 		for(int i = 1; i < argc; ++i) {
@@ -37,84 +38,79 @@ public:
 			std::stringstream ss(argv[i]);
 			if(!(ss >> num) || num < 0)
 				throw std::runtime_error("Error: Invalid input. Only positive integers are allowed.");
-			input.insert(input.end() ,num);
+			input.push_back(num);  // Use push_back instead of insert for containers like vector or deque
 		}
-		if(!printed)
-		{
+		if(!printed) {
 			std::cout << "Before: ";
 			for(typename Container::const_iterator it = input.begin(); it != input.end(); ++it)
 				std::cout << *it << " ";
 			std::cout << std::endl;
 		}
 
-		Container containerCopy(input.begin() ,input.end());
 		clock_t start = clock();
-		mergeInsertSort<Container>(input.begin() ,input.end());
+		mergeInsertSort<Container>(input);
 		clock_t end = clock();
 
-		if(!printed)
-		{
+		if(!printed) {
 			std::cout << "After: ";
-			for(typename Container::const_iterator it = containerCopy.begin(); it != containerCopy.end(); ++it)
+			for(typename Container::const_iterator it = input.begin(); it != input.end(); ++it)
 				std::cout << *it << " ";
 			std::cout << std::endl;
 			printed = true;
 		}
 
 		double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1e6;
-		std::cout << "Time to process a range of " << containerCopy.size()
+		std::cout << "Time to process a range of " << input.size()
 			<< " elements with std::" << type << ": " << time << " us" << std::endl;
 	}
 
-	template <typename Container> static void mergeInsertSort(typename Container::iterator begin ,typename Container::iterator end) {
-		// Base case: if the range has fewer than two elements, it's already sorted
-		if(std::distance(begin ,end) <= 1) return;
+	template <typename Container>
+	static void mergeInsertSort(Container& input) {
+		// Base case: if the container has fewer than two elements, it's already sorted
+		if(input.size() <= 1)
+			return;
 
-		// Step 1: Divide the container into two halves (or chunks)
-		// Use std::advance for non-random access iterators (e.g., std::list)
-		typename Container::iterator middle = begin;
-		std::advance(middle ,std::distance(begin ,end) / 2); // Move 'middle' to the middle position
+		// Step 1: Divide the container into two halves
+		typename Container::iterator middle = input.begin();
+		std::advance(middle ,input.size() / 2); // Find the middle of the container
 
-		// Recursively call mergeInsertSort for each half
-		mergeInsertSort<Container>(begin ,middle);
-		mergeInsertSort<Container>(middle ,end);
+		// Create two temporary containers for the two halves
+		Container left(input.begin() ,middle);  // First half
+		Container right(middle ,input.end());  // Second half
 
-		// Step 2: Merge the sorted halves
-		// Temporary container to store the merged result
-		Container temp(std::distance(begin ,end));
+		// Recursively sort each half
+		mergeInsertSort(left);
+		mergeInsertSort(right);
 
-		typename Container::iterator it1 = begin;
-		typename Container::iterator it2 = middle;
-		typename Container::iterator itTemp = temp.begin();
+		// Step 2: Merge the sorted halves back into the input container
+		typename Container::iterator it = input.begin();
+		typename Container::iterator i = left.begin();
+		typename Container::iterator j = right.begin();
 
-		// Merge two sorted halves
-		while(it1 != middle && it2 != end) {
-			if(*it1 < *it2) {
-				*itTemp = *it1;
-				++it1;
+		while(i != left.end() && j != right.end()) {
+			if(*i < *j) {
+				*it = *i;
+				++i;
 			} else {
-				*itTemp = *it2;
-				++it2;
+				*it = *j;
+				++j;
 			}
-			++itTemp;
+			++it;
 		}
 
-		// If there are any elements left in the first half, add them
-		while(it1 != middle) {
-			*itTemp = *it1;
-			++it1;
-			++itTemp;
+		// Add remaining elements from the first half
+		while(i != left.end()) {
+			*it = *i;
+			++i;
+			++it;
 		}
 
-		// If there are any elements left in the second half, add them
-		while(it2 != end) {
-			*itTemp = *it2;
-			++it2;
-			++itTemp;
+		// Add remaining elements from the second half
+		while(j != right.end()) {
+			*it = *j;
+			++j;
+			++it;
 		}
-
-		// Copy the merged result back into the original container
-		std::copy(temp.begin() ,temp.end() ,begin);
 	}
 };
 

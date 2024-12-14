@@ -6,7 +6,7 @@
 /*   By: moabbas <moabbas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/14 14:18:55 by moabbas           #+#    #+#             */
-/*   Updated: 2024/12/14 18:21:54 by moabbas          ###   ########.fr       */
+/*   Updated: 2024/12/14 18:47:34 by moabbas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <sstream>
 #include <ctime>
 #include <algorithm>
+#include <iomanip>
 
 class PmergeMe {
 private:
@@ -38,7 +39,7 @@ public:
 			std::stringstream ss(argv[i]);
 			if(!(ss >> num) || num < 0)
 				throw std::runtime_error("Error: Invalid input. Only positive integers are allowed.");
-			input.push_back(num);  // Use push_back instead of insert for containers like vector or deque
+			input.push_back(num);
 		}
 		if(!printed) {
 			std::cout << "Before: ";
@@ -59,30 +60,25 @@ public:
 			printed = true;
 		}
 
-		double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1e6;
+		double time = static_cast<double>(end - start) / CLOCKS_PER_SEC;
 		std::cout << "Time to process a range of " << input.size()
-			<< " elements with std::" << type << ": " << time << " us" << std::endl;
+			<< " elements with std::" << type << ": " << std::fixed << std::setprecision(5) << time << " us" << std::endl;
 	}
 
 	template <typename Container>
 	static void mergeInsertSort(Container& input) {
-		// Base case: if the container has fewer than two elements, it's already sorted
 		if(input.size() <= 1)
 			return;
 
-		// Step 1: Divide the container into two halves
 		typename Container::iterator middle = input.begin();
-		std::advance(middle ,input.size() / 2); // Find the middle of the container
+		std::advance(middle ,input.size() / 2);
 
-		// Create two temporary containers for the two halves
-		Container left(input.begin() ,middle);  // First half
-		Container right(middle ,input.end());  // Second half
+		Container left(input.begin() ,middle);
+		Container right(middle ,input.end());
 
-		// Recursively sort each half
 		mergeInsertSort(left);
 		mergeInsertSort(right);
 
-		// Step 2: Merge the sorted halves back into the input container
 		typename Container::iterator it = input.begin();
 		typename Container::iterator i = left.begin();
 		typename Container::iterator j = right.begin();
@@ -97,15 +93,11 @@ public:
 			}
 			++it;
 		}
-
-		// Add remaining elements from the first half
 		while(i != left.end()) {
 			*it = *i;
 			++i;
 			++it;
 		}
-
-		// Add remaining elements from the second half
 		while(j != right.end()) {
 			*it = *j;
 			++j;

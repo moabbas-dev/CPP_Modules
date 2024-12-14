@@ -6,7 +6,7 @@
 /*   By: moabbas <moabbas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/14 14:24:51 by moabbas           #+#    #+#             */
-/*   Updated: 2024/12/14 18:21:03 by moabbas          ###   ########.fr       */
+/*   Updated: 2024/12/14 18:50:52 by moabbas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ int main(int argc, char* argv[]) {
         // List
 		std::list<int> list;
         pm.processInput(argc, argv, list, "list");
-
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;
